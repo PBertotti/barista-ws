@@ -8,10 +8,6 @@ export class CreateMachineDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsDefined()
-  name: string;
-
-  @IsNotEmpty()
   @IsString()
   @IsDefined()
   model: string;

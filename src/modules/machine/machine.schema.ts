@@ -4,6 +4,21 @@ import mongoose, { Document } from 'mongoose';
 export type MachineDocument = Document & Machine;
 
 @Schema()
+export class MachineStatus {
+  @Prop({ default: -1 })
+  waterLevel: number;
+
+  @Prop({ default: -1 })
+  powderLevel: number;
+
+  @Prop({ default: null })
+  hasRecipient: boolean;
+
+  @Prop({ default: null })
+  hasFilter: boolean;
+}
+
+@Schema()
 export class Machine {
   @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
   _id: mongoose.Schema.Types.ObjectId;
@@ -12,10 +27,19 @@ export class Machine {
   serialNum: string;
 
   @Prop()
-  name: string;
+  model: string;
+
+  @Prop({ required: true, default: new Date() })
+  createdAt: Date;
+
+  @Prop({ default: new Date() })
+  updatedAt: Date;
 
   @Prop()
-  model: string;
+  deletedAt: Date;
+
+  @Prop({ default: {} })
+  status: MachineStatus;
 }
 
 export const MachineSchema = SchemaFactory.createForClass(Machine);
