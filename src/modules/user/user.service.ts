@@ -1,6 +1,7 @@
 import { Injectable, PreconditionFailedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { hashString } from 'src/core/helpers/functions/string';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './user.schema';
@@ -12,6 +13,7 @@ export class UserService {
   filterResults(result: any) {
     const res = JSON.parse(JSON.stringify(result));
     delete res.__v;
+    delete res.password;
 
     return res;
   }
@@ -31,6 +33,9 @@ export class UserService {
         emailExists ? 'E-mail already being used' : 'User already exists',
       );
     }
+
+    // Encrypt user password;
+    createUserDto.password = await hashString(createUserDto.password);
 
     const newUser = await this.userModel.create({
       ...createUserDto,
