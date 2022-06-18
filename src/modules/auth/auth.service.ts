@@ -28,12 +28,8 @@ export class AuthService {
   }
 
   async access(accessDTO: AccessDTO) {
-    if (!accessDTO.user && !accessDTO.email) {
-      throw new BadRequestException('Provide user or e-mail');
-    }
-
     const registeredUser = await this.userModel.findOne({
-      '$or:': [accessDTO.user, accessDTO.email],
+      email: accessDTO.email,
     });
 
     // Check if the user exists
@@ -49,7 +45,7 @@ export class AuthService {
     if (passwordMatches === true) {
       const accessToken = await this.jwtService.get(
         {
-          user: registeredUser.user,
+          _id: registeredUser._id,
           email: registeredUser.email,
           name: registeredUser.name,
         },

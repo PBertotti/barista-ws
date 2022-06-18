@@ -5,17 +5,10 @@ import {
   IsString,
   IsOptional,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AccessDTO {
-  @ApiPropertyOptional()
-  @IsNotEmpty()
-  @IsString()
-  @IsDefined()
-  @IsOptional()
-  user: string;
-
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   @IsString()

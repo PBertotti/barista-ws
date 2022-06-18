@@ -20,18 +20,11 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     const existingUsers = await this.userModel.find({
-      $or: [{ user: createUserDto.user }, { email: createUserDto.email }],
+      email: createUserDto.email,
     });
 
     if (existingUsers.length > 0) {
-      // Check if there is another user using this e-mail.
-      const emailExists = existingUsers.find(
-        (user) => user.email === createUserDto.email,
-      );
-
-      throw new PreconditionFailedException(
-        emailExists ? 'E-mail already being used' : 'User already exists',
-      );
+      throw new PreconditionFailedException('User already exists');
     }
 
     // Encrypt user password;
@@ -45,9 +38,21 @@ export class UserService {
     return this.filterResults(newUser);
   }
 
-  async update(updateUserDto: UpdateUserDto) {
+  async findOne(userID) {
     const existingUser = await this.userModel.findOne({
-      user: updateUserDto.email,
+      _id: userID,
+    });
+
+    if (!existingUser) {
+      throw new PreconditionFailedException('User does not exist');
+    }
+
+    return this.filterResults(existingUser);
+  }
+
+  async update(userID, updateUserDto: UpdateUserDto) {
+    const existingUser = await this.userModel.findOne({
+      _id: userID,
     });
 
     if (!existingUser) {
@@ -55,6 +60,10 @@ export class UserService {
     }
 
     // Update device properties and save document in database.
+    [...Object.keys(updateUserDto)].forEach((key) => {
+      existingUser[key] = updateUserDto[key];
+    });
+
     existingUser.updatedAt = new Date();
 
     existingUser.save();

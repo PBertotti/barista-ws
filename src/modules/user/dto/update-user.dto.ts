@@ -1,30 +1,25 @@
-import { IsDefined, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {
+  isArray,
+  IsDefined,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateUserDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNotEmpty()
   @IsString()
   @IsDefined()
+  @IsOptional()
   name: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  @IsString()
-  @IsEmail()
-  @IsDefined()
-  email: string;
-
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNotEmpty()
   @IsString()
   @IsDefined()
-  password: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  @IsDefined()
+  @IsOptional()
   accountStatus: string;
 }

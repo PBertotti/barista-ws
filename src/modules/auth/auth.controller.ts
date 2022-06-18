@@ -7,7 +7,6 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiBearerAuth() // to use swagger bearer token
   @Post('/login')
   access(@Body() accessDTO: AccessDTO) {
     const access = this.authService.access(accessDTO);

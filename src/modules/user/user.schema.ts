@@ -9,9 +9,6 @@ export class User {
   _id: mongoose.Schema.Types.ObjectId;
 
   @Prop()
-  user: string;
-
-  @Prop()
   name: string;
 
   @Prop()
