@@ -10,7 +10,9 @@ import {
 import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineDto } from './dto/update-machine.dto';
 import { MachineService } from './machine.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth() // to use swagger bearer token
 @Controller('machine')
 export class MachineController {
   constructor(private readonly machineService: MachineService) {}

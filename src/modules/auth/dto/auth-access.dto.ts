@@ -5,14 +5,17 @@ import {
   IsString,
   IsOptional,
 } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AccessDTO {
+  @ApiPropertyOptional()
   @IsNotEmpty()
   @IsString()
   @IsDefined()
   @IsOptional()
   user: string;
 
+  @ApiPropertyOptional()
   @IsNotEmpty()
   @IsString()
   @IsString()
@@ -21,6 +24,7 @@ export class AccessDTO {
   @IsOptional()
   email: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   @IsDefined()
