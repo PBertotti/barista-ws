@@ -6,6 +6,7 @@ import {
   Patch,
   Body,
   Param,
+  Req,
 } from '@nestjs/common';
 import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineDto } from './dto/update-machine.dto';
@@ -18,8 +19,8 @@ export class MachineController {
   constructor(private readonly machineService: MachineService) {}
 
   @Get()
-  findAll() {
-    const machines = this.machineService.findAll();
+  findAll(@Req() { auth }) {
+    const machines = this.machineService.findAll(auth._id);
 
     return machines;
   }
@@ -31,9 +32,9 @@ export class MachineController {
     return machines;
   }
 
-  @Post()
-  create(@Body() createMachineDto: CreateMachineDto) {
-    const newMachine = this.machineService.create(createMachineDto);
+  @Post('add')
+  create(@Req() { auth }, @Body() createMachineDto: CreateMachineDto) {
+    const newMachine = this.machineService.create(auth._id, createMachineDto);
     return newMachine;
   }
 
@@ -44,9 +45,9 @@ export class MachineController {
     return updatedMachine;
   }
 
-  @Delete(':serialNum')
-  delete(@Param('serialNum') serialNum: string) {
-    const deletedMachine = this.machineService.delete(serialNum);
+  @Delete(':serialNum/remove')
+  delete(@Req() { auth }, @Param('serialNum') serialNum: string) {
+    const deletedMachine = this.machineService.delete(auth._id, serialNum);
 
     return deletedMachine;
   }

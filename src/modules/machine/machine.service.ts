@@ -1,6 +1,8 @@
 import { Injectable, PreconditionFailedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { throws } from 'assert';
 import { Model } from 'mongoose';
+import { User, UserDocument } from '../user/user.schema';
 import { CreateMachineDto } from './dto/create-machine.dto';
 import { UpdateMachineDto } from './dto/update-machine.dto';
 
@@ -10,6 +12,7 @@ import { Machine, MachineDocument } from './machine.schema';
 export class MachineService {
   constructor(
     @InjectModel(Machine.name) private machineModel: Model<MachineDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   filterResults(result: any) {
@@ -19,8 +22,19 @@ export class MachineService {
     return res;
   }
 
-  async findAll() {
-    const machineList = await this.machineModel.find({}, { __v: 0 });
+  async findAll(userID: string) {
+    // Get user machine list;
+    const user = await this.userModel.findOne({ _id: userID });
+    if (!user) {
+      throw new PreconditionFailedException('User does not exists');
+    }
+
+    const machineList = await this.machineModel.find(
+      { serialNum: user.machines },
+      {
+        __v: 0,
+      },
+    );
 
     return machineList;
   }
@@ -34,20 +48,37 @@ export class MachineService {
     return machine;
   }
 
-  async create(createMachineDto: CreateMachineDto) {
-    const existingMachines = await this.machineModel.count({
+  async create(userID: string, createMachineDto: CreateMachineDto) {
+    // Check if machine already exists;
+    let isNewMachine = false;
+    let machine = await this.machineModel.findOne({
       serialNum: createMachineDto.serialNum,
     });
 
-    if (existingMachines > 0) {
-      throw new PreconditionFailedException('Machine already exists');
+    if (!machine) {
+      // In case the machine doesn't exits, create a new machine.
+      isNewMachine = true;
+
+      machine = await this.machineModel.create({
+        ...createMachineDto,
+      });
     }
 
-    const newMachine = await this.machineModel.create({
-      ...createMachineDto,
-    });
+    // Add machine to the user's machine list;
+    const user = await this.userModel.findOne({ _id: userID });
 
-    return this.filterResults(newMachine);
+    if (!user) {
+      throw new PreconditionFailedException('User does not exist');
+    }
+
+    user.machines.push(machine.serialNum);
+    user.save();
+
+    return {
+      user: { machines: user.machines },
+      machine: this.filterResults(machine),
+      isNewMachine: isNewMachine,
+    };
   }
 
   async update(updateMachineDto: UpdateMachineDto) {
@@ -68,19 +99,26 @@ export class MachineService {
     return this.filterResults(existingMachine);
   }
 
-  async delete(serialNum: string) {
-    const existingMachine = await this.machineModel.findOne({
-      serialNum: serialNum,
-    });
+  async delete(userID, serialNum: string) {
+    // Remove machine from the user's machine list;
+    const user = await this.userModel.findOne({ _id: userID });
 
-    if (!existingMachine) {
-      throw new PreconditionFailedException('Machine does not exist');
+    if (!user) {
+      throw new PreconditionFailedException('User does not exist');
     }
 
-    // Update device properties and save document in database.
-    existingMachine.deletedAt = new Date();
-    existingMachine.remove();
+    const machineIndex = user.machines.findIndex(
+      (machineSerial) => serialNum === machineSerial,
+    );
 
-    return this.filterResults(existingMachine);
+    if (machineIndex === -1) {
+      throw new PreconditionFailedException('User does not have this machine');
+    }
+
+    user.machines.splice(machineIndex, 1);
+
+    user.save();
+
+    return this.filterResults({ user: { machines: user.machines } });
   }
 }
